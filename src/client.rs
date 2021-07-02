@@ -1,5 +1,5 @@
 use crate::util::http_method_str;
-use actix_http::{encoding::Decoder, Error, Payload, PayloadStream};
+use actix_http::{encoding::Decoder, Payload, PayloadStream};
 use actix_web::{
     body::Body,
     http::{HeaderName, HeaderValue},
@@ -17,6 +17,7 @@ use opentelemetry_semantic_conventions::trace::{
     HTTP_FLAVOR, HTTP_METHOD, HTTP_STATUS_CODE, HTTP_URL, NET_PEER_IP,
 };
 use serde::Serialize;
+use std::error::Error as StdError;
 use std::fmt;
 use std::str::FromStr;
 
@@ -131,7 +132,7 @@ impl InstrumentedClientRequest {
     pub async fn send_stream<S, E>(self, stream: S) -> AwcResult
     where
         S: Stream<Item = Result<Bytes, E>> + Unpin + 'static,
-        E: Into<Error> + 'static,
+        E: Into<Box<dyn StdError>> + 'static,
     {
         self.trace_request(|request| request.send_stream(stream))
             .await

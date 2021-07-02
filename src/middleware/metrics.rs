@@ -150,7 +150,7 @@ where
         Error = actix_web::Error,
     >,
     S::Future: 'static,
-    B: 'static,
+    B: 'static + From<dev::Body>,
     F: Fn(&dev::ServiceRequest) -> bool + Send + Clone + 'static,
 {
     type Response = dev::ServiceResponse<B>;
@@ -185,7 +185,7 @@ where
         Error = actix_web::Error,
     >,
     S::Future: 'static,
-    B: 'static,
+        B: 'static + From<dev::Body>,
     F: Fn(&dev::ServiceRequest) -> bool + Send + Clone + 'static,
 {
     type Response = dev::ServiceResponse<B>;
@@ -209,7 +209,7 @@ where
                 req.into_response(
                     actix_web::HttpResponse::Ok()
                         .body(dev::Body::from_message(self.inner.metrics()))
-                        .into_body(),
+                        .map_body(|_, body| {Into::into(body)}),
                 ),
             ))
         } else {
